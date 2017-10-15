@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: ~/language-ruby
     docker:
-      - image: fpco/stack-build:lts-9.9
+      - image: fpco/stack-build:lts-9.8
     steps:
       - checkout
       - restore_cache:
