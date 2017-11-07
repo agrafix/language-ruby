@@ -101,27 +101,27 @@ binary :: T.Text -> (a -> a -> a) -> Operator Parser a
 binary  name f = InfixL  (f <$ symbol name)
 prefix :: T.Text -> (a -> a) -> Operator Parser a
 prefix  name f = Prefix  (f <$ symbol name)
-postfix :: T.Text -> (a -> a) -> Operator Parser a
-postfix name f = Postfix (f <$ symbol name)
+--postfix :: T.Text -> (a -> a) -> Operator Parser a
+--postfix name f = Postfix (f <$ symbol name)
 
 ifThenElse :: Parser IfThenElse
 ifThenElse =
-    do void $ symbol "if"
+    do rword "if"
        cond <- parseExpr
-       void $ symbol "then"
+       rword "then"
        body <- parseExpr
        elsif <-
            many $
-           do void $ symbol "elsif"
+           do rword "elsif"
               condE <- parseExpr
-              void $ symbol "then"
+              rword "then"
               bodyE <- parseExpr
               pure (condE, bodyE)
        els <-
            optional $
-           do void $ symbol "else"
+           do rword "else"
               parseExpr
-       void $ symbol "end"
+       rword "end"
        pure
            IfThenElse
            { ite_if = (cond, body)
