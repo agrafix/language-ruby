@@ -24,7 +24,14 @@ data Expr
     | EBinOp !BinOp
     | EVar !Ident
     | EIfThenElse !IfThenElse
+    | EFunCall !FunCall
     deriving (Show, Eq)
+
+data FunCall
+    = FunCall
+    { fc_ident :: !Ident
+    , fc_args :: ![Expr]
+    } deriving (Show, Eq)
 
 data IfThenElse
     = IfThenElse

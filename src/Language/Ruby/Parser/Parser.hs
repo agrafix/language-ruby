@@ -1,5 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 module Language.Ruby.Parser.Parser
     ( parseProgram
     , execParser
@@ -8,8 +9,9 @@ where
 
 import Language.Ruby.Parser.AST
 
-import Control.Monad (void)
+import Control.Monad (void, when)
 import Data.Bifunctor
+import Data.Maybe
 import Data.Void
 import Text.Megaparsec
 import Text.Megaparsec.Char
@@ -57,8 +59,17 @@ term =
     parens expr
     <|> (EIfThenElse <$> try ifThenElse)
     <|> (ELit <$> lit)
+    <|> (EFunCall <$> funCall)
     <|> (EVar <$> identifier)
     <?> "term"
+
+funCall :: Parser FunCall
+funCall =
+    do fc_ident <- identifier
+       openBrac <- optional (symbol "(")
+       fc_args <- expr `sepBy` symbol ","
+       when (isJust openBrac) $ void $ symbol ")"
+       pure FunCall {..}
 
 lit :: Parser Literal
 lit =
