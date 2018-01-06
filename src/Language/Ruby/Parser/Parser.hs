@@ -63,12 +63,29 @@ term :: Parser Expr
 term =
     parens expr
     <|> (EFunDef <$> funDef)
+    <|> (EClassDef <$> classDef)
     <|> (EIfThenElse <$> try ifThenElse)
     <|> (ELit <$> lit)
     <|> (EFunCall <$> funCall)
     <|> (EVar <$> identifier)
     <|> (EHash <$> rhash)
     <?> "term"
+
+classDef :: Parser ClassDef
+classDef =
+    do rword "class"
+       cd_name <- className
+       cd_inherits <-
+           optional $
+           do void $ symbol "<"
+              className
+       void $ symbol "\n"
+       cd_body <- parseExprSeq
+       rword "end"
+       pure ClassDef {..}
+
+className :: Parser ClassName
+className = ClassName . unIdent <$> identifier
 
 funDef :: Parser FunDef
 funDef =
@@ -181,9 +198,10 @@ parens = between (symbol "(") (symbol ")")
 
 allowNegative :: Num x => Parser x -> Parser x
 allowNegative p =
+    try $
     do neg <- optional $ symbol "-"
        let op = if isJust neg then (-1) else 1
-       (op *)<$> p
+       (op *) <$> p
 
 integer :: Parser Int
 integer = lexeme $ allowNegative L.decimal

@@ -29,6 +29,10 @@ newtype Ident
     = Ident { unIdent :: T.Text }
     deriving (Show, Eq)
 
+newtype ClassName
+    = ClassName { unClassName :: T.Text }
+    deriving (Show, Eq)
+
 data Expr
     = ELit !Literal
     | EBinOp !BinOp
@@ -37,6 +41,7 @@ data Expr
     | EFunCall !FunCall
     | EHash !(HM.HashMap HashKey Expr)
     | EFunDef !FunDef
+    | EClassDef !ClassDef
     deriving (Show, Eq)
 
 data HashKey
@@ -51,6 +56,13 @@ data FunDef
     { fd_name :: !Ident
     , fd_args :: ![Ident]
     , fd_body :: !(Seq.Seq Expr)
+    } deriving (Show, Eq)
+
+data ClassDef
+    = ClassDef
+    { cd_name :: !ClassName
+    , cd_inherits :: !(Maybe ClassName)
+    , cd_body :: !(Seq.Seq Expr)
     } deriving (Show, Eq)
 
 data FunCall
