@@ -103,6 +103,7 @@ rhash =
     do openBrac <- optional (symbol "{")
        mp <- kvPair `sepBy` symbol ","
        when (isJust openBrac) $ void $ symbol "}"
+       when (isNothing openBrac && null mp) $ fail "Empty hash w/o {} not allowed."
        pure $ HM.fromList mp
     where
         kvKey =
@@ -123,10 +124,7 @@ lit =
 
 table :: [[Operator Parser Expr]]
 table =
-    [ [ prefix  "-"  (binOp1 BoNegate)
-      , prefix  "+"  id
-      ]
-    , [ binary  "*"  (binOp2 BoMul)
+    [ [ binary  "*"  (binOp2 BoMul)
       , binary  "/"  (binOp2 BoDiv)
       ]
     , [ binary  "+"  (binOp2 BoAdd)
@@ -134,16 +132,16 @@ table =
       ]
     ]
 
-binOp1 :: (Expr -> BinOp) -> Expr -> Expr
-binOp1 f = EBinOp . f
+--binOp1 :: (Expr -> BinOp) -> Expr -> Expr
+--binOp1 f = EBinOp . f
 
 binOp2 :: (Expr -> Expr -> BinOp) -> Expr -> Expr -> Expr
 binOp2 f a b = EBinOp $ f a b
 
 binary :: T.Text -> (a -> a -> a) -> Operator Parser a
 binary  name f = InfixL  (f <$ symbol name)
-prefix :: T.Text -> (a -> a) -> Operator Parser a
-prefix  name f = Prefix  (f <$ symbol name)
+--prefix :: T.Text -> (a -> a) -> Operator Parser a
+--prefix  name f = Prefix  (f <$ symbol name)
 --postfix :: T.Text -> (a -> a) -> Operator Parser a
 --postfix name f = Postfix (f <$ symbol name)
 
