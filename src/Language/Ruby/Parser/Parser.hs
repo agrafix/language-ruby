@@ -179,11 +179,17 @@ symbol = L.symbol sc
 parens :: Parser a -> Parser a
 parens = between (symbol "(") (symbol ")")
 
+allowNegative :: Num x => Parser x -> Parser x
+allowNegative p =
+    do neg <- optional $ symbol "-"
+       let op = if isJust neg then (-1) else 1
+       (op *)<$> p
+
 integer :: Parser Int
-integer = lexeme L.decimal
+integer = lexeme $ allowNegative L.decimal
 
 double :: Parser Double
-double = lexeme L.float
+double = lexeme $ allowNegative L.float
 
 semi :: Parser T.Text
 semi = symbol ";"
