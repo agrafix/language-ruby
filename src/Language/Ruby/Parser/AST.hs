@@ -1,5 +1,10 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE DeriveGeneric #-}
 module Language.Ruby.Parser.AST where
 
+import Data.Hashable
+import GHC.Generics
+import qualified Data.HashMap.Strict as HM
 import qualified Data.Sequence as Seq
 import qualified Data.Text as T
 
@@ -8,8 +13,13 @@ data Program
     { p_body :: !(Seq.Seq Expr)
     } deriving (Show, Eq)
 
+newtype Symbol
+    = Symbol { unSymbol :: T.Text }
+    deriving (Show, Eq, Hashable)
+
 data Literal
     = LString !T.Text
+    | LSymbol !Symbol
     | LInt !Int
     | LDouble !Double
     | LBool !Bool
@@ -25,7 +35,15 @@ data Expr
     | EVar !Ident
     | EIfThenElse !IfThenElse
     | EFunCall !FunCall
+    | EHash !(HM.HashMap HashKey Expr)
     deriving (Show, Eq)
+
+data HashKey
+    = HkString !T.Text
+    | HkSymbol !Symbol
+    deriving (Show, Eq, Generic)
+
+instance Hashable HashKey
 
 data FunCall
     = FunCall

@@ -8,6 +8,7 @@ module Language.Ruby.Parser.Parser
 where
 
 import Language.Ruby.Parser.AST
+import qualified Data.HashMap.Strict as HM
 
 import Control.Monad (void, when)
 import Data.Bifunctor
@@ -61,6 +62,7 @@ term =
     <|> (ELit <$> lit)
     <|> (EFunCall <$> funCall)
     <|> (EVar <$> identifier)
+    <|> (EHash <$> rhash)
     <?> "term"
 
 funCall :: Parser FunCall
@@ -71,12 +73,32 @@ funCall =
        when (isJust openBrac) $ void $ symbol ")"
        pure FunCall {..}
 
+rsymbol :: Parser Symbol
+rsymbol =
+    symbol ":" *> (Symbol . unIdent <$> identifier)
+
+rhash :: Parser (HM.HashMap HashKey Expr)
+rhash =
+    do openBrac <- optional (symbol "{")
+       mp <- kvPair `sepBy` symbol ","
+       when (isJust openBrac) $ void $ symbol "}"
+       pure $ HM.fromList mp
+    where
+        kvKey =
+            HkSymbol <$> (Symbol . unIdent <$> identifier)
+        kvPair =
+            do k <- kvKey
+               void $ symbol ":"
+               val <- expr
+               pure (k, val)
+
 lit :: Parser Literal
 lit =
     (LDouble <$> try double)
     <|> (LInt <$> integer)
     <|> (LBool True <$ symbol "true")
     <|> (LBool False <$ symbol "false")
+    <|> (LSymbol <$> rsymbol)
 
 table :: [[Operator Parser Expr]]
 table =
