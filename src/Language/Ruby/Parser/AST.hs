@@ -23,11 +23,12 @@ data Literal
     | LInt !Int
     | LDouble !Double
     | LBool !Bool
+    | LVoid
     deriving (Show, Eq)
 
 newtype Ident
     = Ident { unIdent :: T.Text }
-    deriving (Show, Eq)
+    deriving (Show, Eq, Hashable)
 
 newtype ClassName
     = ClassName { unClassName :: T.Text }

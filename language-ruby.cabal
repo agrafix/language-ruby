@@ -17,12 +17,15 @@ library
   hs-source-dirs:      src
   exposed-modules:     Language.Ruby.Parser.AST
                      , Language.Ruby.Parser.Parser
+                     , Language.Ruby.Interpreter.Eval
   build-depends:       base >= 4.7 && < 5
                      , megaparsec >= 6.2
                      , text
                      , containers >= 0.5
                      , unordered-containers >= 0.2
                      , hashable >= 1.2
+                     , mtl >= 2.2
+                     , transformers >= 0.5
   default-language:    Haskell2010
   ghc-options:       -Wall
 
