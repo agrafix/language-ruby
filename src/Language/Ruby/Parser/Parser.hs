@@ -32,12 +32,16 @@ execParser name p inp =
 -- expression.
 parseProgram :: Parser Program
 parseProgram =
-    (Program . Seq.fromList) <$> many (parseExpr <* delim) <* eof
+    Program <$> parseExprSeq <* eof
+
+parseExprSeq :: Parser (Seq.Seq Expr)
+parseExprSeq =
+    Seq.fromList <$> many (parseExpr <* delim)
     where
       delim =
-          symbol "\n"
-          <|> semi
-          <|> (semi <* symbol "\n")
+          void (some (symbol "\n"))
+          <|> void semi
+          <|> void (semi <* some (symbol "\n"))
 
 parseExpr :: Parser Expr
 parseExpr = lexeme expr
@@ -58,12 +62,29 @@ expr = makeExprParser term table <?> "expression"
 term :: Parser Expr
 term =
     parens expr
+    <|> (EFunDef <$> funDef)
     <|> (EIfThenElse <$> try ifThenElse)
     <|> (ELit <$> lit)
     <|> (EFunCall <$> funCall)
     <|> (EVar <$> identifier)
     <|> (EHash <$> rhash)
     <?> "term"
+
+funDef :: Parser FunDef
+funDef =
+    do rword "def"
+       fd_name <- identifier
+       args <-
+           optional $
+           do void $ symbol "("
+              x <- identifier `sepBy` symbol ","
+              void $ symbol ")"
+              pure x
+       let fd_args = fromMaybe [] args
+       void $ symbol "\n"
+       fd_body <- parseExprSeq
+       rword "end"
+       pure FunDef {..}
 
 funCall :: Parser FunCall
 funCall =

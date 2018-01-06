@@ -36,6 +36,7 @@ data Expr
     | EIfThenElse !IfThenElse
     | EFunCall !FunCall
     | EHash !(HM.HashMap HashKey Expr)
+    | EFunDef !FunDef
     deriving (Show, Eq)
 
 data HashKey
@@ -44,6 +45,13 @@ data HashKey
     deriving (Show, Eq, Generic)
 
 instance Hashable HashKey
+
+data FunDef
+    = FunDef
+    { fd_name :: !Ident
+    , fd_args :: ![Ident]
+    , fd_body :: !(Seq.Seq Expr)
+    } deriving (Show, Eq)
 
 data FunCall
     = FunCall
